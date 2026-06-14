@@ -1,0 +1,53 @@
+// =============================================================================
+// album-list / index.mjs
+// -----------------------------------------------------------------------------
+// 역할: 로그인한 사용자 본인의 썸네일 목록을 돌려준다. 비공개 버킷이므로,
+//       각 객체에 대해 'presigned GET URL'을 만들어 브라우저가 직접 볼 수 있게 한다.
+// 트리거: API Gateway (GET /albums), JWT Authorizer 통과 후 호출.
+//
+// [입력] 이벤트의 requestContext.authorizer.jwt.claims.sub 로 사용자 식별.
+// [출력] 200 JSON:
+//   { "items": [
+//       { "key": "gallery/thumb/james/20260615_....jpg",
+//         "url": "https://<bucket>.s3...amazonaws.com/...?X-Amz-... (presigned GET)" }
+//   ] }
+// =============================================================================
+import { S3Client, ListObjectsV2Command, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+const REGION = process.env.REGION;
+const BUCKET = process.env.BUCKET;
+const VIEW_EXPIRES = 300;
+
+const s3 = new S3Client({ region: REGION });
+
+export const handler = async (event) => {
+  try {
+    const sub = event?.requestContext?.authorizer?.jwt?.claims?.sub;
+    if (!sub) return json(401, { message: "no subject in token" });
+
+    // 본인 썸네일 prefix 만 조회 — 사용자 간 데이터 격리.
+    const prefix = `gallery/thumb/${sub}/`;
+
+    // ListObjectsV2: prefix 하위 객체 키 목록. (예시 응답: Contents:[{Key, Size, LastModified}, ...])
+    const listed = await s3.send(new ListObjectsV2Command({ Bucket: BUCKET, Prefix: prefix }));
+    const contents = listed.Contents ?? [];
+
+    // 각 키를 presigned GET URL 로 변환(비공개 버킷을 안전하게 보여주는 방법).
+    const items = await Promise.all(
+      contents.map(async (o) => ({
+        key: o.Key,
+        url: await getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: o.Key }), { expiresIn: VIEW_EXPIRES }),
+      }))
+    );
+
+    return json(200, { items });
+  } catch (err) {
+    console.error("list error:", err);
+    return json(500, { message: "failed to list albums" });
+  }
+};
+
+function json(statusCode, obj) {
+  return { statusCode, headers: { "content-type": "application/json" }, body: JSON.stringify(obj) };
+}

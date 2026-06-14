@@ -1,0 +1,8 @@
+{
+  "name": "thumbnailer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "S3 이벤트 기반 썸네일 생성 Lambda",
+  "_note": "sharp 는 Lambda 레이어(sharp-x64)에서 제공된다. 이 함수 zip 에는 sharp 를 넣지 않는다(중복 금지).",
+  "dependencies": {}
+}

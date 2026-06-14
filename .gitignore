@@ -1,0 +1,31 @@
+# ===== 시크릿 / 키 (공개 리포 절대 금지) =====
+# private.pem 은 폐쇄 커뮤니티로 배포, 사용자가 : auth-server/keys/에 둔다. 
+*.pem
+.env
+.env.*
+config/env.local.sh
+config/env.local.ps1
+
+# ==== AI 가이드 ======
+CLAUDE.md
+requests/
+
+# ==== 참조문서 =====
+./refdoc
+
+# ===== 빌드 산출물 =====
+**/node_modules/
+**/*.zip
+build/
+lambdas/**/dist/
+
+# ===== 실행 중 생성되는 상태 파일 =====
+# 스크립트가 생성한 리소스 ID(API_ID, 레이어 ARN 등)를 기록하는 로컬 캐시
+.state/
+*.state.json
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

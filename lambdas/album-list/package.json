@@ -1,0 +1,10 @@
+{
+  "name": "album-list",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "본인 썸네일 목록 + presigned GET URL 반환 Lambda",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/s3-request-presigner": "^3.600.0"
+  }
+}

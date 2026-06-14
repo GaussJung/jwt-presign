@@ -1,0 +1,8 @@
+{
+  "name": "backup-authorizer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "비상용 Lambda Authorizer(RS256 직접 검증). 평소 미사용.",
+  "_note": "jose 는 런타임에 없으므로 배포 zip 에 반드시 포함(npm install 후 패키징).",
+  "dependencies": { "jose": "^5.9.0" }
+}

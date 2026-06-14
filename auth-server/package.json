@@ -1,0 +1,8 @@
+{
+  "name": "auth-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "간편앨범 인증/정적 서버 (EC2). RS256 JWT 발행 + 웹 클라이언트 서빙.",
+  "scripts": { "start": "node src/server.js" },
+  "dependencies": { "express": "^4.19.2", "jose": "^5.9.0" }
+}
