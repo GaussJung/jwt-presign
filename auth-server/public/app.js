@@ -1,5 +1,6 @@
 // =============================================================================
 // app.js  —  간편앨범 웹 클라이언트 (교육용)
+// 라이트박스: 썸네일 클릭 → 원본 이미지 전체화면 팝업 / ✕ 버튼·ESC·오버레이 클릭으로 닫기
 // -----------------------------------------------------------------------------
 // 전체 흐름(아키텍처와 1:1):
 //   1) POST /login            → JWT 토큰 수신(메모리에 보관)
@@ -72,6 +73,19 @@ $("uploadBtn").onclick = async () => {
 
 $("refreshBtn").onclick = () => loadAlbums();
 
+// --- 라이트박스 (원본 이미지 전체화면 팝업) ------------------------------------
+function openLightbox(url) {
+  $("lb-img").src = url;
+  $("lightbox").classList.add("open");
+}
+function closeLightbox() {
+  $("lightbox").classList.remove("open");
+  $("lb-img").src = ""; // 메모리 해제
+}
+$("lb-close").onclick = closeLightbox;
+$("lightbox").onclick = (e) => { if (e.target === $("lightbox")) closeLightbox(); }; // 오버레이 클릭
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeLightbox(); }); // ESC
+
 // --- 5) 앨범 조회 ------------------------------------------------------------
 async function loadAlbums() {
   try {
@@ -82,7 +96,12 @@ async function loadAlbums() {
     $("emptyMsg").style.display = items.length ? "none" : "block";
     items.forEach((it) => {
       const img = document.createElement("img");
-      img.src = it.url; img.alt = it.key; // presigned GET URL
+      img.src = it.url; img.alt = it.key; // presigned GET URL(썸네일)
+      if (it.originalUrl) {
+        img.classList.add("clickable");
+        img.title = "클릭 — 원본 보기";
+        img.onclick = () => openLightbox(it.originalUrl);
+      }
       grid.appendChild(img);
     });
     log(`[albums] ${items.length}개 항목`, "log-ok");

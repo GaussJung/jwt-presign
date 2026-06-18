@@ -198,6 +198,36 @@ API_ENDPOINT="$API_ENDPOINT" npm start         # 포그라운드로 http://local
 3. **사진 업로드**(jpg/png/webp) → 로그에 `[presign] OK` → `[upload] 완료` → 잠시 후
    `[albums] N개 항목`, **내 앨범**에 썸네일 표시(= 썸네일 람다 자동 생성 성공).
 
+### G-1-1. Presigned URL 원리 확인
+
+앨범에서 썸네일을 클릭하면 브라우저 주소창(또는 네트워크 탭)에서 아래와 같은 URL을 볼 수 있습니다.
+
+```
+https://myalbum-<ACCOUNT_ID>.s3.ap-northeast-2.amazonaws.com/gallery/thumb/james/20260618_....jpg
+  ?X-Amz-Algorithm=AWS4-HMAC-SHA256
+  &X-Amz-Credential=ASIA...%2Fap-northeast-2%2Fs3%2Faws4_request
+  &X-Amz-Date=20260618T132343Z
+  &X-Amz-Expires=300
+  &X-Amz-Signature=55d066...
+```
+
+**파일명 뒤의 쿼리스트링이 임시 접근권한 그 자체**입니다. S3 버킷은 퍼블릭 비공개이므로, URL만으로는 접근이 안 됩니다. Lambda가 본인 자격증명으로 "이 조건에서만 허용"이라는 서명을 URL에 포함시켜, 브라우저가 Lambda 없이 S3와 직접 통신할 수 있게 합니다.
+
+| 파라미터 | 의미 |
+|---|---|
+| `X-Amz-Credential` | 어떤 자격증명(Lambda 역할)으로 서명했는지 |
+| `X-Amz-Date` | 서명 생성 시각 |
+| `X-Amz-Expires` | 유효시간(초) — `300` = 5분 후 자동 만료 |
+| `X-Amz-Security-Token` | EC2/Lambda가 STS에서 발급받은 **임시 자격증명 토큰** |
+| `X-Amz-Signature` | 위 조건을 HMAC-SHA256으로 서명한 값 — 위변조 방지 |
+
+> **PUT vs GET presigned URL**
+> - **업로드(PUT)**: `presign-creator` Lambda가 생성 → 브라우저가 S3에 직접 PUT
+> - **조회(GET)**: `album-list` Lambda가 생성 → 브라우저가 S3에 직접 GET
+>
+> 두 경우 모두 이진 데이터(이미지)가 Lambda/API Gateway를 거치지 않습니다.
+> Lambda는 **"서명된 URL"만 발급**하고, 실제 전송은 브라우저↔S3 간 직접 이루어집니다.
+
 ### G-2. `aud` 격리 실증 (E의 목표)
 2인 1조로 **상대의 API**에 내 토큰을 던져 401을 확인합니다.
 > 전제: ① 내 auth-server가 떠 있을 것(§F), ② 상대의 **API-ID**(상대가 05 실행 후 공유)를 알 것.
@@ -216,7 +246,7 @@ curl -i -X POST https://<B의-API-ID>.execute-api.ap-northeast-2.amazonaws.com/p
 
 ### G-3. (선택) 자동 스모크 테스트
 ```bash
-bash scripts/90_smoke_test.sh   # 로그인→presign→PUT(1x1 PNG)→썸네일→목록 end-to-end
+bash scripts/90_smoke_test.sh   # 로그인→presign→PUT(640×480 PNG)→썸네일→목록 end-to-end
 ```
 
 ### 자주 막히는 곳

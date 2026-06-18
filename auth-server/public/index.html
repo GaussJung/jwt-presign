@@ -28,10 +28,22 @@
     .pill{font:12px/1 var(--mono);padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
     #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:4px}
     #grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:#eee}
+    #grid img.clickable{cursor:pointer;transition:opacity .15s}
+    #grid img.clickable:hover{opacity:.82}
     .empty{color:var(--muted);font-size:13px;padding:8px 0}
     #log{font:12px/1.6 var(--mono);background:#1c2430;color:#cfd6df;border-radius:10px;padding:12px 14px;
       margin-top:18px;white-space:pre-wrap;max-height:220px;overflow:auto}
     .log-ok{color:#8fd6b0} .log-err{color:#f0a08a}
+    /* 라이트박스 */
+    #lightbox{display:none;position:fixed;inset:0;z-index:1000;
+      background:rgba(0,0,0,.88);align-items:center;justify-content:center}
+    #lightbox.open{display:flex}
+    #lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;
+      border-radius:8px;box-shadow:0 4px 40px rgba(0,0,0,.6)}
+    #lb-close{position:absolute;top:16px;right:20px;background:rgba(255,255,255,.12);
+      border:0;color:#fff;font-size:22px;line-height:1;width:36px;height:36px;
+      border-radius:50%;cursor:pointer;display:grid;place-items:center}
+    #lb-close:hover{background:rgba(255,255,255,.25)}
   </style>
 </head>
 <body>
@@ -66,6 +78,11 @@
     </section>
 
     <div id="log">[log] 준비됨. 먼저 로그인하세요.</div>
+  </div>
+  <!-- 라이트박스: 썸네일 클릭 시 원본 이미지 전체화면 팝업 -->
+  <div id="lightbox">
+    <button id="lb-close" title="닫기(Esc)">✕</button>
+    <img id="lb-img" src="" alt="원본 이미지" />
   </div>
   <script src="app.js"></script>
 </body>

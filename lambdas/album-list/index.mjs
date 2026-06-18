@@ -31,22 +31,42 @@ export const handler = async (event) => {
 
     // ListObjectsV2: prefix 하위 객체 키 목록. 응답은 한 번에 최대 1000개이므로,
     // IsTruncated 면 NextContinuationToken 으로 끝까지 이어 받는다(대량 대비).
-    const contents = [];
-    let token;
-    do {
-      const listed = await s3.send(new ListObjectsV2Command({
-        Bucket: BUCKET, Prefix: prefix, ContinuationToken: token,
-      }));
-      contents.push(...(listed.Contents ?? []));
-      token = listed.IsTruncated ? listed.NextContinuationToken : undefined;
-    } while (token);
+    const list = async (pfx) => {
+      const contents = [];
+      let token;
+      do {
+        const listed = await s3.send(new ListObjectsV2Command({
+          Bucket: BUCKET, Prefix: pfx, ContinuationToken: token,
+        }));
+        contents.push(...(listed.Contents ?? []));
+        token = listed.IsTruncated ? listed.NextContinuationToken : undefined;
+      } while (token);
+      return contents;
+    };
 
-    // 각 키를 presigned GET URL 로 변환(비공개 버킷을 안전하게 보여주는 방법).
+    // 썸네일·원본을 병렬로 목록 조회.
+    const [thumbs, origs] = await Promise.all([
+      list(`gallery/thumb/${sub}/`),
+      list(`gallery/original/${sub}/`),
+    ]);
+
+    // 원본 파일명 줄기(확장자 제거) → S3 키 맵. 썸네일과 1:1 매핑에 사용.
+    // 예: "gallery/original/james/20260618_1718....png" → "20260618_1718..." → key
+    const stem = (key) => key.split("/").pop().replace(/\.[^.]+$/, "");
+    const origMap = new Map(origs.map((o) => [stem(o.Key), o.Key]));
+
+    // 각 썸네일: presigned GET URL + 매칭된 원본의 presigned GET URL 도 함께 반환.
     const items = await Promise.all(
-      contents.map(async (o) => ({
-        key: o.Key,
-        url: await getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: o.Key }), { expiresIn: VIEW_EXPIRES }),
-      }))
+      thumbs.map(async (o) => {
+        const origKey = origMap.get(stem(o.Key));
+        const [url, originalUrl] = await Promise.all([
+          getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: o.Key }), { expiresIn: VIEW_EXPIRES }),
+          origKey
+            ? getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: origKey }), { expiresIn: VIEW_EXPIRES })
+            : Promise.resolve(null),
+        ]);
+        return { key: o.Key, url, originalUrl };
+      })
     );
 
     return json(200, { items });
