@@ -1,7 +1,7 @@
 // =============================================================================
 // src/jwt.js  —  RS256 JWT 발행 (개인키 서명)
 // -----------------------------------------------------------------------------
-// 개인키(private.pem)는 폐쇄 커뮤니티로 받아 auth-server/keys/ 에 직접 둔다(리포에 없음).
+// 개인키(jwt_private_key.pem)는 폐쇄 커뮤니티로 받아 auth-server/keys/ 에 직접 둔다(리포에 없음).
 // 발행 토큰은 중앙 auth-lab 의 공개키(JWKS)로 검증된다 → kid/iss/aud 가 핵심.
 // =============================================================================
 import { readFileSync } from "node:fs";
@@ -19,10 +19,10 @@ const KID = "easyalbum-jwt-key-v2";                // JWKS의 kid와 동일
 // 개인키 로드(없으면 친절히 안내하고 종료)
 let privateKey;
 try {
-  const pem = readFileSync(join(__dirname, "..", "keys", "private.pem"), "utf8");
+  const pem = readFileSync(join(__dirname, "..", "keys", "jwt_private_key.pem"), "utf8");
   privateKey = await importPKCS8(pem, "RS256");
 } catch {
-  console.error("[jwt] keys/private.pem 이 없습니다. 폐쇄 커뮤니티에서 받은 개인키를 auth-server/keys/ 에 두세요.");
+  console.error("[jwt] keys/jwt_private_key.pem 이 없습니다. 폐쇄 커뮤니티에서 받은 개인키를 auth-server/keys/ 에 두세요.");
   process.exit(1);
 }
 

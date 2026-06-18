@@ -1,5 +1,5 @@
 # ===== 시크릿 / 키 (공개 리포 절대 금지) =====
-# private.pem 은 폐쇄 커뮤니티로 배포, 사용자가 : auth-server/keys/에 둔다. 
+# jwt_private_key.pem 은 폐쇄 커뮤니티로 배포, 사용자가 : auth-server/keys/에 둔다.
 *.pem
 .env
 .env.*
@@ -11,7 +11,7 @@ CLAUDE.md
 requests/
 
 # ==== 참조문서 =====
-./refdoc
+refdoc/
 
 # ===== 빌드 산출물 =====
 **/node_modules/

@@ -6,6 +6,14 @@
 $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1
 
+# resources.env 키 업서트 헬퍼(재실행 시 SHARP_LAYER_ARN 라인 중복 누적 방지).
+function Put-State($key, $val) {
+  New-Item -ItemType Directory -Force -Path .state | Out-Null
+  $f = ".state\resources.env"
+  if (Test-Path $f) { (Get-Content $f) | Where-Object { $_ -notmatch "^$key=" } | Set-Content $f }
+  Add-Content $f "$key=$val"
+}
+
 Write-Host "── sharp 빌드(nodejs/node_modules 구조, linux-x64 타깃) ──"
 Remove-Item -Recurse -Force build\layer -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path build\layer\nodejs | Out-Null
@@ -22,6 +30,6 @@ $LayerArn = (aws lambda publish-layer-version --layer-name $SHARP_LAYER_NAME `
   --zip-file "fileb://build/sharp-layer.zip" `
   --compatible-runtimes nodejs20.x --compatible-architectures x86_64 `
   --region $REGION --query 'LayerVersionArn' --output text)
-"SHARP_LAYER_ARN=$LayerArn" | Add-Content .state\resources.env
+Put-State "SHARP_LAYER_ARN" $LayerArn
 Write-Host "  ✓ $LayerArn"
 Write-Host "✅ 다음: scripts\04_deploy_lambdas.ps1"

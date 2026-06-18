@@ -13,6 +13,14 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 source ./config/env.sh
 
+# STATE_FILE 키 갱신 헬퍼(재실행 시 SHARP_LAYER_ARN 라인 중복 누적 방지).
+mkdir -p "$(dirname "$STATE_FILE")"; touch "$STATE_FILE"
+put_state() {  # $1=KEY $2=VALUE
+  grep -v "^$1=" "$STATE_FILE" > "$STATE_FILE.tmp" 2>/dev/null || true
+  mv -f "$STATE_FILE.tmp" "$STATE_FILE"
+  echo "$1=$2" >> "$STATE_FILE"
+}
+
 echo "── sharp 빌드(nodejs/node_modules 구조) ─────────────"
 rm -rf build/layer && mkdir -p build/layer/nodejs
 ( cd build/layer/nodejs && npm init -y >/dev/null && npm install sharp >/dev/null )
@@ -31,6 +39,6 @@ LAYER_ARN="$(aws lambda publish-layer-version \
   --region "$REGION" \
   --query 'LayerVersionArn' --output text)"
 
-echo "SHARP_LAYER_ARN=${LAYER_ARN}" >> "$STATE_FILE"
+put_state SHARP_LAYER_ARN "$LAYER_ARN"
 echo "  ✓ ${LAYER_ARN}"
 echo "✅ 레이어 게시 완료. 다음: bash scripts/04_deploy_lambdas.sh"

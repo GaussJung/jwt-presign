@@ -19,6 +19,8 @@ Write-Host ("  aws: " + (aws --version)); Write-Host ("  node: " + (node --versi
 Write-Host "── 2) AWS 자격증명 / 계정 확인 ─────────────────────"
 # get-caller-identity 실패 시 자격증명 없음/만료
 aws sts get-caller-identity | Out-Null
+# 네이티브 명령은 실패해도 throw 하지 않으므로 종료코드로 친절히 안내(=.sh의 set -e 보완과 동일 의도).
+if ($LASTEXITCODE -ne 0) { throw "AWS 자격증명 없음/만료. 'aws configure' 또는 EC2 인스턴스 프로파일을 확인하세요." }
 Write-Host "  ✓ ACCOUNT_ID = $ACCOUNT_ID"
 Write-Host "  ✓ REGION     = $REGION"
 Write-Host "  ✓ BUCKET(예정) = $BUCKET"

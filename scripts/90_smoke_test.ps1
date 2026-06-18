@@ -15,13 +15,15 @@ Write-Host ("  ✓ 토큰 앞 20자: " + $Token.Substring(0,20) + "...")
 Write-Host "── 2) presigned URL ──"
 $presign = Invoke-RestMethod -Method Post -Uri "$API_ENDPOINT/presign" `
   -Headers @{ Authorization = "Bearer $Token" } -ContentType 'application/json' `
-  -Body (@{ contentType="image/jpeg" } | ConvertTo-Json)
+  -Body (@{ contentType="image/png" } | ConvertTo-Json)
 Write-Host "  ✓ key=$($presign.keyName)"
 
 Write-Host "── 3) S3 직접 업로드(PUT) ──"
-# Content-Type 은 presign 시 값과 일치해야 함
-"test-image" | Set-Content .state\sample.jpg
-Invoke-RestMethod -Method Put -Uri $presign.uploadUrl -ContentType 'image/jpeg' -InFile .state\sample.jpg
+# ⚠️ Content-Type 은 presign 값(image/png)과 일치해야 서명이 맞는다.
+# ⚠️ thumbnailer(sharp)가 디코드 가능한 '진짜' 이미지여야 썸네일이 생성된다 → 1x1 PNG 사용.
+$png = [Convert]::FromBase64String('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==')
+[IO.File]::WriteAllBytes((Join-Path (Get-Location) '.state\sample.png'), $png)
+Invoke-RestMethod -Method Put -Uri $presign.uploadUrl -ContentType 'image/png' -InFile .state\sample.png
 Write-Host "  ✓ 업로드 완료. 썸네일 대기..."; Start-Sleep -Seconds 5
 
 Write-Host "── 4) 앨범 목록 ──"

@@ -24,15 +24,22 @@ package() {
 #   $1=함수명 $2=핸들러 $3=zip $4..=추가 옵션(레이어/메모리 등)
 deploy() {
   local fn="$1" handler="$2" zip="$3"; shift 3
-  local common=(--runtime nodejs20.x --role "$ROLE_ARN" --region "$REGION" \
-                --handler "$handler" \
-                --environment "Variables={BUCKET=$BUCKET,REGION=$REGION,ISSUER=$ISSUER,AUDIENCE=$AUDIENCE}")
+  # 코드 외 설정(런타임/핸들러/역할/환경변수). create·update 양쪽에 동일 적용한다.
+  #   $@ = 함수별 추가옵션(--timeout/--memory-size/--layers) — create/update-config 모두 유효.
+  local cfg=(--runtime nodejs20.x --role "$ROLE_ARN" --region "$REGION" \
+             --handler "$handler" \
+             --environment "Variables={BUCKET=$BUCKET,REGION=$REGION,ISSUER=$ISSUER,AUDIENCE=$AUDIENCE}")
   if aws lambda get-function --function-name "$fn" --region "$REGION" >/dev/null 2>&1; then
     echo "  · 업데이트 ${fn}"
     aws lambda update-function-code --function-name "$fn" --zip-file "fileb://$zip" --region "$REGION" >/dev/null
+    aws lambda wait function-updated --function-name "$fn" --region "$REGION"
+    # 코드만이 아니라 설정(env/메모리/타임아웃/레이어)도 재반영 → 재실행 멱등성 보장.
+    aws lambda update-function-configuration --function-name "$fn" "${cfg[@]}" "$@" >/dev/null
+    aws lambda wait function-updated --function-name "$fn" --region "$REGION"
   else
     echo "  · 생성 ${fn}"
-    aws lambda create-function --function-name "$fn" --zip-file "fileb://$zip" "${common[@]}" "$@" >/dev/null
+    aws lambda create-function --function-name "$fn" --zip-file "fileb://$zip" "${cfg[@]}" "$@" >/dev/null
+    aws lambda wait function-active --function-name "$fn" --region "$REGION"
   fi
 }
 

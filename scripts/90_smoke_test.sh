@@ -26,15 +26,19 @@ echo "── 2) presigned URL 요청 ──────────────�
 PRESIGN="$(curl -s -X POST "${API}/presign" \
   -H "authorization: Bearer ${TOKEN}" \
   -H 'content-type: application/json' \
-  -d '{"contentType":"image/jpeg"}')"
+  -d '{"contentType":"image/png"}')"
 UPLOAD_URL="$(echo "$PRESIGN" | jq -r '.uploadUrl')"
 KEY="$(echo "$PRESIGN" | jq -r '.keyName')"
 echo "  ✓ key=${KEY}"
 
 echo "── 3) S3 직접 업로드(PUT) ──────────────────────────"
-# ⚠️ Content-Type 은 presign 시 지정한 값과 '정확히' 일치해야 서명이 맞는다.
-echo "test-image" > .state/sample.jpg
-curl -s -X PUT "$UPLOAD_URL" -H 'content-type: image/jpeg' --data-binary @.state/sample.jpg
+# ⚠️ Content-Type 은 presign 시 지정한 값(image/png)과 '정확히' 일치해야 서명이 맞는다.
+# ⚠️ thumbnailer(sharp)가 디코드 가능한 '진짜' 이미지여야 썸네일이 생성된다.
+#    → 1x1 PNG(base64)를 디코드해 업로드. (텍스트 더미는 sharp 디코드 실패 → 썸네일 미생성)
+base64 -d > .state/sample.png << 'B64'
+iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
+B64
+curl -s -X PUT "$UPLOAD_URL" -H 'content-type: image/png' --data-binary @.state/sample.png
 echo "  ✓ 업로드 완료(원본). 썸네일 생성까지 잠시 대기..."
 sleep 5
 

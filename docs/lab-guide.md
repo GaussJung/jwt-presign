@@ -4,7 +4,7 @@
 
 ## 0. 준비 (수업 전/도입)
 - EC2 접속(기본 사용자 `ubuntu`), Node 20·AWS CLI v2·jq·zip 설치 확인
-- 커뮤니티에서 받은 `private.pem` 을 `auth-server/keys/` 에 복사
+- 커뮤니티에서 받은 `jwt_private_key.pem` 을 `auth-server/keys/` 에 복사
 - `git clone` 후 프로젝트 루트로 이동
 
 ## 1. JWT 개념 (이해)

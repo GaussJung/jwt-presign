@@ -29,9 +29,17 @@ export const handler = async (event) => {
     // 본인 썸네일 prefix 만 조회 — 사용자 간 데이터 격리.
     const prefix = `gallery/thumb/${sub}/`;
 
-    // ListObjectsV2: prefix 하위 객체 키 목록. (예시 응답: Contents:[{Key, Size, LastModified}, ...])
-    const listed = await s3.send(new ListObjectsV2Command({ Bucket: BUCKET, Prefix: prefix }));
-    const contents = listed.Contents ?? [];
+    // ListObjectsV2: prefix 하위 객체 키 목록. 응답은 한 번에 최대 1000개이므로,
+    // IsTruncated 면 NextContinuationToken 으로 끝까지 이어 받는다(대량 대비).
+    const contents = [];
+    let token;
+    do {
+      const listed = await s3.send(new ListObjectsV2Command({
+        Bucket: BUCKET, Prefix: prefix, ContinuationToken: token,
+      }));
+      contents.push(...(listed.Contents ?? []));
+      token = listed.IsTruncated ? listed.NextContinuationToken : undefined;
+    } while (token);
 
     // 각 키를 presigned GET URL 로 변환(비공개 버킷을 안전하게 보여주는 방법).
     const items = await Promise.all(

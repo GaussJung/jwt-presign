@@ -37,8 +37,11 @@ export const handler = async (event) => {
       continue;
     }
 
-    // 대상 키: gallery/original/... → gallery/thumb/...  (같은 파일명 유지)
-    const dstKey = srcKey.replace("gallery/original/", "gallery/thumb/");
+    // 대상 키: gallery/original/... → gallery/thumb/...
+    // 출력은 항상 JPEG 이므로 확장자도 .jpg 로 통일(키 확장자 ↔ 실제 콘텐츠 일치).
+    const dstKey = srcKey
+      .replace("gallery/original/", "gallery/thumb/")
+      .replace(/\.[^.]+$/, ".jpg");
 
     console.log(`thumbnail: ${srcKey} → ${dstKey}`);
 

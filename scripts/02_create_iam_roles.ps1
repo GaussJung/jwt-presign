@@ -4,6 +4,14 @@
 $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1
 
+# .state 자기완결 보장 + resources.env 키 업서트 헬퍼(절단/중복 라인 방지).
+function Put-State($key, $val) {
+  New-Item -ItemType Directory -Force -Path .state | Out-Null
+  $f = ".state\resources.env"
+  if (Test-Path $f) { (Get-Content $f) | Where-Object { $_ -notmatch "^$key=" } | Set-Content $f }
+  Add-Content $f "$key=$val"
+}
+
 Write-Host "── 역할 $LAMBDA_ROLE_NAME 생성/확인 ──"
 aws iam get-role --role-name $LAMBDA_ROLE_NAME 2>$null | Out-Null
 if ($LASTEXITCODE -ne 0) {
@@ -22,7 +30,7 @@ aws iam put-role-policy --role-name $LAMBDA_ROLE_NAME `
   --policy-name "s3-gallery-rw" --policy-document "file://.state/lambda-s3-policy.json"
 
 $RoleArn = (aws iam get-role --role-name $LAMBDA_ROLE_NAME --query 'Role.Arn' --output text)
-"ROLE_ARN=$RoleArn" | Set-Content .state\resources.env
+Put-State "ROLE_ARN" $RoleArn
 Write-Host "  ✓ ROLE_ARN=$RoleArn"
 Write-Host "  (IAM 전파 대기 10초)"; Start-Sleep -Seconds 10
 Write-Host "✅ 역할 준비 완료. 다음: scripts\03_publish_layer.ps1"

@@ -52,11 +52,12 @@ export const handler = async (event) => {
 
     // 3) S3 key 생성 — 규칙: gallery/original/{sub}/{yyyyMMdd}_{ms}.{ext}
     //    예: gallery/original/james/20260615_1718456789012.jpg
+    //    날짜는 UTC 기준으로 생성(Lambda 기본 TZ=UTC, 로컬TZ 의존 제거).
     const now = new Date();
     const yyyyMMdd =
-      now.getFullYear().toString() +
-      String(now.getMonth() + 1).padStart(2, "0") +
-      String(now.getDate()).padStart(2, "0");
+      now.getUTCFullYear().toString() +
+      String(now.getUTCMonth() + 1).padStart(2, "0") +
+      String(now.getUTCDate()).padStart(2, "0");
     const keyName = `gallery/original/${sub}/${yyyyMMdd}_${now.getTime()}.${ext}`;
 
     // 4) presigned PUT URL 발급
