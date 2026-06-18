@@ -1,4 +1,4 @@
-# Simple Album — AWS 서버리스 업로드 실습 v0.56
+# Simple Album — AWS 서버리스 업로드 실습 v0.57
 
 JWT(RS256) + Presigned URL 기반 서버리스 파일 업로드를 직접 구현하는 3시간 교육용 프로젝트.
 

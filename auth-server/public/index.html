@@ -48,7 +48,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>간편앨범 <span class="pill" id="who">로그아웃 상태</span></h1>
+    <h1>간편앨범 <span class="pill" id="who">로그아웃 상태</span><button id="logoutBtn" style="display:none;margin-left:10px;padding:5px 12px;font-size:12px;background:var(--muted)">로그아웃</button></h1>
     <p class="sub">로그인 → JWT 발행 → presigned URL로 S3 직접 업로드 → 썸네일 자동 생성 → 조회</p>
 
     <!-- 1) 로그인: /login 으로 RS256 JWT 발급 -->
@@ -56,7 +56,7 @@
       <h2><span class="num">1</span> 로그인</h2>
       <div class="row">
         <input id="username" placeholder="사용자 (예: james)" value="james" />
-        <input id="password" type="password" placeholder="비밀번호 (데모: demo)" value="demo" />
+        <input id="password" type="password" placeholder="비밀번호 (데모: demo)" />
         <button id="loginBtn">로그인</button>
       </div>
     </section>
