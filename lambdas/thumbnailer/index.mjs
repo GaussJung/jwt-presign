@@ -23,7 +23,7 @@ import sharp from "sharp"; // ← Lambda 레이어(sharp-x64)에서 제공됨. �
 const REGION = process.env.REGION;
 const s3 = new S3Client({ region: REGION });
 
-const THUMB_WIDTH = 320; // 썸네일 가로 px (세로는 비율 유지)
+const THUMB_WIDTH = 240; // 썸네일 가로 px (세로는 비율 유지)
 
 export const handler = async (event) => {
   for (const record of event.Records ?? []) {

@@ -32,12 +32,34 @@ KEY="$(echo "$PRESIGN" | jq -r '.keyName')"
 echo "  ✓ key=${KEY}"
 
 echo "── 3) S3 직접 업로드(PUT) ──────────────────────────"
+# Python3 로 400×300 RGB 그라디언트 PNG 생성.
+# base64 heredoc은 line-ending 등 환경 차이에 취약해 Python3 직접 생성으로 교체.
+# 400px > THUMB_WIDTH(320px) → 실제 리사이즈 발생해 썸네일 검증 의미 있음.
+# 색상: 좌상=빨강, 우상=파랑, 좌하=초록, 우하=청록 — 2색 이상 섞인 그라디언트.
+python3 - << 'PYEOF'
+import struct, zlib
+w, h = 640, 480
+def chunk(t, d):
+    return struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t + d) & 0xffffffff)
+sig  = b'\x89PNG\r\n\x1a\n'
+ihdr = chunk(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0))
+rows = bytearray()
+for y in range(h):
+    rows.append(0)  # filter byte (None)
+    for x in range(w):
+        rows += bytes([
+            int(255 * (1 - x / (w - 1))),   # R: 좌→우 255→0
+            int(255 * (y / (h - 1))),         # G: 상→하 0→255
+            int(255 * (x / (w - 1))),         # B: 좌→우 0→255
+        ])
+idat = chunk(b'IDAT', zlib.compress(bytes(rows), 1))
+iend = chunk(b'IEND', b'')
+data = sig + ihdr + idat + iend
+with open('.state/sample.png', 'wb') as f:
+    f.write(data)
+print('  · sample.png: %dx%d px, %d bytes' % (w, h, len(data)))
+PYEOF
 # ⚠️ Content-Type 은 presign 시 지정한 값(image/png)과 '정확히' 일치해야 서명이 맞는다.
-# ⚠️ thumbnailer(sharp)가 디코드 가능한 '진짜' 이미지여야 썸네일이 생성된다.
-#    → 1x1 PNG(base64)를 디코드해 업로드. (텍스트 더미는 sharp 디코드 실패 → 썸네일 미생성)
-base64 -d > .state/sample.png << 'B64'
-iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
-B64
 curl -s -X PUT "$UPLOAD_URL" -H 'content-type: image/png' --data-binary @.state/sample.png
 echo "  ✓ 업로드 완료(원본). 썸네일 생성까지 잠시 대기..."
 sleep 5
