@@ -53,7 +53,8 @@ export const handler = async (event) => {
       const inputBuffer = await streamToBuffer(obj.Body);
 
       // 2) 리사이즈 (가로 THUMB_WIDTH, 비율 유지, jpeg 품질 80)
-      const outputBuffer = await sharp(inputBuffer)
+      // failOnError:false — libvips가 EXIF/프로그레시브 등 비표준 인코딩에 경고를 던져도 계속 처리
+      const outputBuffer = await sharp(inputBuffer, { failOnError: false })
         .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
         .jpeg({ quality: 80 })
         .toBuffer();
