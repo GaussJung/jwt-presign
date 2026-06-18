@@ -26,6 +26,8 @@ const s3 = new S3Client({ region: REGION });
 const THUMB_WIDTH = 240; // 썸네일 가로 px (세로는 비율 유지)
 
 export const handler = async (event) => {
+  const results = { ok: 0, failed: 0 };
+
   for (const record of event.Records ?? []) {
     const bucket = record.s3.bucket.name;
     // S3 key 디코딩(+ → space, %xx → char)
@@ -43,24 +45,34 @@ export const handler = async (event) => {
       .replace("gallery/original/", "gallery/thumb/")
       .replace(/\.[^.]+$/, ".jpg");
 
-    console.log(`thumbnail: ${srcKey} → ${dstKey}`);
+    try {
+      console.log(`thumbnail: ${srcKey} → ${dstKey}`);
 
-    // 1) 원본 다운로드 (스트림 → 버퍼)
-    const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: srcKey }));
-    const inputBuffer = await streamToBuffer(obj.Body);
+      // 1) 원본 다운로드 (스트림 → 버퍼)
+      const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: srcKey }));
+      const inputBuffer = await streamToBuffer(obj.Body);
 
-    // 2) 리사이즈 (가로 320, 비율 유지, jpeg 품질 80)
-    const outputBuffer = await sharp(inputBuffer)
-      .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
-      .jpeg({ quality: 80 })
-      .toBuffer();
+      // 2) 리사이즈 (가로 THUMB_WIDTH, 비율 유지, jpeg 품질 80)
+      const outputBuffer = await sharp(inputBuffer)
+        .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
 
-    // 3) 썸네일 업로드
-    await s3.send(new PutObjectCommand({
-      Bucket: bucket, Key: dstKey, Body: outputBuffer, ContentType: "image/jpeg",
-    }));
+      // 3) 썸네일 업로드
+      await s3.send(new PutObjectCommand({
+        Bucket: bucket, Key: dstKey, Body: outputBuffer, ContentType: "image/jpeg",
+      }));
+
+      results.ok++;
+      console.log(`thumbnail ok: ${dstKey}`);
+    } catch (err) {
+      // 파일 한 개 실패가 나머지 레코드 처리를 막지 않도록 per-record catch
+      results.failed++;
+      console.error(`thumbnail failed [${srcKey}]: ${err.message}`);
+    }
   }
-  return { ok: true };
+
+  return results;
 };
 
 // Node 스트림을 Buffer로 모으는 헬퍼
