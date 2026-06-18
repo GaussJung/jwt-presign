@@ -12,7 +12,7 @@ function Need($cmd, $hint) {
 }
 $script:Missing = $false
 Need aws  "AWS CLI v2 설치 필요"
-Need node "Node.js 20.x 설치 필요"
+Need node "Node.js 24.x 설치 필요"
 if ($script:Missing) { throw "필수 도구 설치 후 다시 실행하세요." }
 Write-Host ("  aws: " + (aws --version)); Write-Host ("  node: " + (node --version))
 

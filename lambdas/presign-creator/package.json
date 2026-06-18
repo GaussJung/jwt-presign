@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Presigned PUT URL 발급 Lambda",
-  "_note": "nodejs20.x 런타임에 aws-sdk v3 포함. 아래 의존성은 로컬 개발/명시용이며 배포 zip에 꼭 넣지 않아도 동작한다.",
+  "_note": "nodejs24.x 런타임에 aws-sdk v3 포함. 아래 의존성은 로컬 개발/명시용이며 배포 zip에 꼭 넣지 않아도 동작한다.",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.600.0",
     "@aws-sdk/s3-request-presigner": "^3.600.0"

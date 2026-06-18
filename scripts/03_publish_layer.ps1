@@ -28,7 +28,7 @@ Compress-Archive -Path build\layer\nodejs -DestinationPath build\sharp-layer.zip
 Write-Host "── 레이어 게시 ──"
 $LayerArn = (aws lambda publish-layer-version --layer-name $SHARP_LAYER_NAME `
   --zip-file "fileb://build/sharp-layer.zip" `
-  --compatible-runtimes nodejs20.x --compatible-architectures x86_64 `
+  --compatible-runtimes nodejs24.x --compatible-architectures x86_64 `
   --region $REGION --query 'LayerVersionArn' --output text)
 Put-State "SHARP_LAYER_ARN" $LayerArn
 Write-Host "  ✓ $LayerArn"

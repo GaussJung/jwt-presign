@@ -23,13 +23,13 @@ function Deploy($fn, $handler, $zip, $extra) {
     aws lambda wait function-updated --function-name $fn --region $REGION
     # 코드만이 아니라 설정(env/메모리/타임아웃/레이어)도 재반영 → 재실행 멱등성 보장.
     aws lambda update-function-configuration --function-name $fn `
-      --runtime nodejs20.x --role $ROLE_ARN --handler $handler --region $REGION `
+      --runtime nodejs24.x --role $ROLE_ARN --handler $handler --region $REGION `
       --environment $envVars @extra | Out-Null
     aws lambda wait function-updated --function-name $fn --region $REGION
   } else {
     Write-Host "  · 생성 $fn"
     aws lambda create-function --function-name $fn --zip-file "fileb://$zip" `
-      --runtime nodejs20.x --role $ROLE_ARN --handler $handler --region $REGION `
+      --runtime nodejs24.x --role $ROLE_ARN --handler $handler --region $REGION `
       --environment $envVars @extra | Out-Null
     aws lambda wait function-active --function-name $fn --region $REGION
   }

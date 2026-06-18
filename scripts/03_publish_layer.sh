@@ -34,7 +34,7 @@ echo "── 레이어 게시 ────────────────�
 LAYER_ARN="$(aws lambda publish-layer-version \
   --layer-name "$SHARP_LAYER_NAME" \
   --zip-file "fileb://build/sharp-layer.zip" \
-  --compatible-runtimes nodejs20.x \
+  --compatible-runtimes nodejs24.x \
   --compatible-architectures x86_64 \
   --region "$REGION" \
   --query 'LayerVersionArn' --output text)"

@@ -26,7 +26,7 @@ jwt-presign/
 │       ├── README.md             #   jwt_private_key.pem 배치 안내
 │       └── .gitkeep              #   빈 디렉토리 유지용
 │
-├── lambdas/                      # ── 서버리스 함수(Node 20.x, ESM) ──
+├── lambdas/                      # ── 서버리스 함수(Node 24.x, ESM) ──
 │   ├── presign-creator/          #   POST /presign → presigned PUT URL 생성(expiresIn=300)
 │   │   ├── index.mjs
 │   │   └── package.json

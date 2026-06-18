@@ -26,7 +26,7 @@
 // =============================================================================
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-// 참고: nodejs20.x 런타임에는 AWS SDK v3가 기본 포함되어 있어 별도 번들 없이 import 가능.
+// 참고: nodejs24.x 런타임에는 AWS SDK v3가 기본 포함되어 있어 별도 번들 없이 import 가능.
 
 const REGION = process.env.REGION;
 const BUCKET = process.env.BUCKET;

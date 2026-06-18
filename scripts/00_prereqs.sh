@@ -16,7 +16,7 @@ echo "── 1) 필수 도구 확인 ──────────────�
 need() { command -v "$1" >/dev/null 2>&1 || { echo "  ✗ $1 없음 → $2"; MISSING=1; }; }
 MISSING=0
 need aws  "AWS CLI v2 설치 필요"
-need node "Node.js 20.x 설치 필요"
+need node "Node.js 24.x 설치 필요"
 need jq   "jq 설치 필요 (sudo apt-get install -y jq)"
 need zip  "zip 설치 필요 (sudo apt-get install -y zip)"
 [ "$MISSING" = "1" ] && { echo "필수 도구를 설치한 뒤 다시 실행하세요."; exit 1; }

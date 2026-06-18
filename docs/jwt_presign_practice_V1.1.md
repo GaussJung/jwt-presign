@@ -79,8 +79,8 @@ ssh -i <your-key>.pem ubuntu@<EC2-PUBLIC-IP>   # 기본 사용자: ubuntu
 # 기본 도구
 sudo apt-get update && sudo apt-get install -y jq zip git unzip curl
 
-# Node.js 20.x (NodeSource — 우분투 기본 저장소 버전에 의존하지 말 것)
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node.js 24.x (NodeSource — 우분투 기본 저장소 버전에 의존하지 말 것)
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 # AWS CLI v2 (공식 설치본 — apt 패키지는 구버전일 수 있음)

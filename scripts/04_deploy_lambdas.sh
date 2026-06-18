@@ -26,7 +26,7 @@ deploy() {
   local fn="$1" handler="$2" zip="$3"; shift 3
   # 코드 외 설정(런타임/핸들러/역할/환경변수). create·update 양쪽에 동일 적용한다.
   #   $@ = 함수별 추가옵션(--timeout/--memory-size/--layers) — create/update-config 모두 유효.
-  local cfg=(--runtime nodejs20.x --role "$ROLE_ARN" --region "$REGION" \
+  local cfg=(--runtime nodejs24.x --role "$ROLE_ARN" --region "$REGION" \
              --handler "$handler" \
              --environment "Variables={BUCKET=$BUCKET,REGION=$REGION,ISSUER=$ISSUER,AUDIENCE=$AUDIENCE}")
   if aws lambda get-function --function-name "$fn" --region "$REGION" >/dev/null 2>&1; then
