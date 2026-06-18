@@ -23,6 +23,8 @@ lambdas/**/dist/
 # 스크립트가 생성한 리소스 ID(API_ID, 레이어 ARN 등)를 기록하는 로컬 캐시
 .state/
 *.state.json
+# operation 런타임 파일(PID·로그)
+operation/.run/
 
 # OS / 에디터
 .DS_Store
