@@ -40,17 +40,21 @@ jwt-presign/
 │       ├── index.mjs
 │       └── package.json
 │
-├── scripts/                      # ── 프로비저닝 스크립트(.sh = EC2 / .ps1 = Windows) ──
-│   ├── 00_prereqs.{sh,ps1}       #   CLI/자격증명/리전/ACCOUNT_ID 사전 점검
-│   ├── 01_create_bucket.{sh,ps1} #   S3 버킷 + CORS
-│   ├── 02_create_iam_roles.{sh,ps1}
-│   ├── 03_publish_layer.{sh,ps1} #   EC2에서 sharp 빌드 → 레이어 publish(x86_64)
-│   ├── 04_deploy_lambdas.{sh,ps1}
-│   ├── 05_create_http_api.{sh,ps1} # HTTP API + 네이티브 JWT Authorizer + 라우트/CORS
-│   ├── 06_wire_s3_event.{sh,ps1} #   S3 이벤트 트리거(prefix=gallery/original/)
-│   ├── 90_smoke_test.{sh,ps1}    #   로그인→presign→업로드→썸네일→목록 end-to-end
-│   ├── 99_teardown.{sh,ps1}      #   파괴적 — 사용자 명시 확인 후에만
-│   └── _load_state.ps1           #   스크립트 간 리소스 ID 상태 로드(Windows용 헬퍼)
+├── scripts/                      # ── 프로비저닝 스크립트(EC2/Ubuntu bash) ──
+│   ├── 00_prereqs.sh             #   CLI/자격증명/리전/ACCOUNT_ID 사전 점검
+│   ├── 01_create_bucket.sh       #   S3 버킷 + CORS
+│   ├── 02_create_iam_roles.sh
+│   ├── 03_publish_layer.sh       #   EC2에서 sharp 빌드 → 레이어 publish(x86_64)
+│   ├── 04_deploy_lambdas.sh
+│   ├── 05_create_http_api.sh     #   HTTP API + 네이티브 JWT Authorizer + 라우트/CORS
+│   ├── 06_wire_s3_event.sh       #   S3 이벤트 트리거(prefix=gallery/original/)
+│   ├── 90_smoke_test.sh          #   로그인→presign→업로드→썸네일→목록 end-to-end
+│   ├── 99_teardown.sh            #   파괴적 — 사용자 명시 확인 후에만
+│   └── powershell/               # ── Windows(.ps1) 동일 스크립트 세트 ──
+│       ├── 00_prereqs.ps1 · 01_create_bucket.ps1 · 02_create_iam_roles.ps1
+│       ├── 03_publish_layer.ps1 · 04_deploy_lambdas.ps1 · 05_create_http_api.ps1
+│       ├── 06_wire_s3_event.ps1 · 90_smoke_test.ps1 · 99_teardown.ps1
+│       └── _load_state.ps1       #   스크립트 간 리소스 ID 상태 로드(Windows용 헬퍼)
 │
 ├── config/                       # ── 환경값 단일 출처 + 정책 템플릿 ──
 │   ├── env.sh / env.ps1          #   계정ID·리전·issuer·audience 등(런타임 로드)
@@ -60,10 +64,11 @@ jwt-presign/
 │   └── README.md
 │
 ├── docs/                         # ── 문서(공개) ──
-│   ├── lab-guide.md              #   학생용 실습 가이드(3시간)
-│   ├── instructor-notes.md       #   강사용 노트
-│   ├── directory-structure.md    #   (이 문서) 디렉토리 구조도
-│   └── jwt_presign_user_manual_v1.0.pdf
+│   ├── 1_lab-guide.md                         #   학생용 실습 가이드(3시간)
+│   ├── 2_JWT_Presigned_URL_개념설명_v1.0.pdf  #   개념 교육 자료(외부 배포물)
+│   ├── 3_jwt_presign_practice_guide.md        #   실습 절차서(손으로 따라 하기)
+│   ├── 4_directory-structure.md               #   (이 문서) 디렉토리 구조도
+│   └── 5_operation_maintenance_manual.md      #   운영/유지보수 매뉴얼
 │
 ├── refdoc/                       # ── 참조 자료(.gitignore 제외, 공개 리포 미포함) ──
 │   ├── gen-authlab.mjs           #   공개키 → JWKS + OIDC discovery 생성기
@@ -84,7 +89,7 @@ jwt-presign/
 |---|---|---|---|
 | 인증/웹 서버 | `auth-server/` | 학생 EC2 | RS256 JWT 발행 + 웹 클라이언트 서빙 |
 | 서버리스 함수 | `lambdas/` | AWS Lambda | presign 발급 · 썸네일 · 목록 |
-| 프로비저닝 | `scripts/` | EC2(`bash`) / Windows(`.ps1`) | 인프라 생성·배포·정리 |
+| 프로비저닝 | `scripts/` (bash) · `scripts/powershell/` (.ps1) | EC2 / Windows | 인프라 생성·배포·정리 |
 | 설정/정책 | `config/` | 스크립트가 로드 | 환경값 단일 출처 + IAM/CORS 템플릿 |
 | 문서 | `docs/` | — | 학생/강사 가이드 |
 

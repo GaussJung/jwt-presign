@@ -3,7 +3,7 @@
 > 본인 AWS 계정 + 본인 EC2(Ubuntu 24.04, x86_64)에서 진행합니다.
 
 ## 0. 준비 (수업 전/도입)
-- EC2 접속(기본 사용자 `ubuntu`), Node 20·AWS CLI v2·jq·zip 설치 확인
+- EC2 접속(기본 사용자 `ubuntu`), Node 24·AWS CLI v2·jq·zip 설치 확인
 - 커뮤니티에서 받은 `jwt_private_key.pem` 을 `auth-server/keys/` 에 복사
 - `git clone` 후 프로젝트 루트로 이동
 

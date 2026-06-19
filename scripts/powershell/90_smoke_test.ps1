@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # 90_smoke_test.ps1  —  end-to-end 점검 (Windows)
 # 전제: auth-server 가 떠 있어야 함(별도 창에서 npm start). 기본 http://localhost:3000
 # =============================================================================
 $ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1; . .\scripts\_load_state.ps1
+Set-Location (Join-Path $PSScriptRoot "..\.."); . .\config\env.ps1; . .\scripts\powershell\_load_state.ps1
 $AuthUrl = if ($env:AUTH_URL) { $env:AUTH_URL } else { "http://localhost:3000" }
 
 Write-Host "── 1) 로그인 → JWT ──"

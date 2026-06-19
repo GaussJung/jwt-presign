@@ -1,8 +1,8 @@
-# =============================================================================
+﻿# =============================================================================
 # 02_create_iam_roles.ps1  —  Lambda 실행 역할 + 최소권한 정책 (Windows)
 # =============================================================================
 $ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1
+Set-Location (Join-Path $PSScriptRoot "..\.."); . .\config\env.ps1
 
 # .state 자기완결 보장 + resources.env 키 업서트 헬퍼(절단/중복 라인 방지).
 function Put-State($key, $val) {

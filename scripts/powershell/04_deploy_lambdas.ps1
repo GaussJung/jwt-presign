@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # 04_deploy_lambdas.ps1  —  Lambda 3종 배포 (Windows)
 # 멱등성: 있으면 코드 업데이트, 없으면 생성
 # =============================================================================
 $ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1; . .\scripts\_load_state.ps1
+Set-Location (Join-Path $PSScriptRoot "..\.."); . .\config\env.ps1; . .\scripts\powershell\_load_state.ps1
 
 function Package($dir) {
   $name = Split-Path $dir -Leaf

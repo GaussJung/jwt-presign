@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # 99_teardown.ps1  —  전체 리소스 삭제 (⚠️ 파괴적, Windows)
 # 안전장치: DELETE 입력해야 진행
 # =============================================================================
 $ErrorActionPreference = "SilentlyContinue"   # 이미 없는 리소스 삭제 시도는 무시
-Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1; . .\scripts\_load_state.ps1
+Set-Location (Join-Path $PSScriptRoot "..\.."); . .\config\env.ps1; . .\scripts\powershell\_load_state.ps1
 
 Write-Host "⚠️  삭제 대상: 버킷 $BUCKET / API $API_ID / Lambda 3종+백업 / 역할 $LAMBDA_ROLE_NAME"
 $confirm = Read-Host "정말 삭제하려면 DELETE 입력"

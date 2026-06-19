@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # 01_create_bucket.ps1  —  S3 버킷 생성 + 퍼블릭 차단 + CORS (Windows)
 # 멱등성: 이미 있으면 생성 건너뜀
 # =============================================================================
 $ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1
+Set-Location (Join-Path $PSScriptRoot "..\.."); . .\config\env.ps1
 
 Write-Host "── 버킷 $BUCKET 확인/생성 ──"
 # head-bucket: 성공 시 존재. PowerShell은 비0 종료코드를 예외로 보지 않으므로 $LASTEXITCODE 확인.

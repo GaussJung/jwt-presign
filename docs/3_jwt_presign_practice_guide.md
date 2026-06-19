@@ -1,20 +1,8 @@
-# 간편앨범 실습 가이드 (JWT + Presigned URL) — v1.1
+# 간편앨범 실습 가이드 (JWT + Presigned URL) — v1.2
 
-> **개요 교육 자료:** `refdoc/JWT_Presigned_URL_개념설명.pptx`, `docs/jwt_presign_user_manual_v1.0.pdf`
+> **개요 교육 자료:** `refdoc/JWT_Presigned_URL_개념설명.pptx`, `docs/2_JWT_Presigned_URL_개념설명_v1.0.pdf`
 > 이 문서는 **실제 손으로 따라 하는 실습 절차서**입니다. 개념은 위 개요 자료로 먼저 학습한 뒤 진행하세요.
 > **대상:** 본인 AWS 계정 + 본인 EC2(Ubuntu 24.04, x86_64, t3.micro). 교육 7~10인.
-
----
-
-> ### 📌 v1.0 → v1.1 변경 요약 (강사 검토 반영)
-> 1. **관리자 자격증명: IAM User+액세스 키 → EC2 인스턴스 프로파일로 정정.**
->    역할명 **`myrole_ec2_admin_profile`** (AdministratorAccess, 교육 샌드박스 전용). 장기 키를 EC2에
->    두지 않아 키 유출·회수 부담이 없습니다(CLAUDE.md §2/§8 부합). → **§B, §H 변경.**
-> 2. **포트 3000 확정** — 웹앱(auth-server)은 3000 포트. 보안그룹 22+3000. → §A.
-> 3. **개인키 배치 단계(§D-2) 유지** — 키 없으면 auth-server 기동 실패.
-> 4. **AUDIENCE 두 곳 동시 수정(§E) 유지** — `auth-server/src/jwt.js` + `config/env.sh`.
-> 5. **(검토 반영)** `npm start` 포그라운드 점유 → **별도 터미널/백그라운드 실행** 안내 보강(§F),
->    §G-2 교차 테스트 **전제** 명시.
 
 ---
 
@@ -31,7 +19,7 @@
 | G | 구동 검증(화면/토큰/로그 + aud 격리 실증) | 업로드·썸네일·401 |
 | H | 자원 삭제(보안/비용) | 정리 완료 |
 
-> 모든 셸 명령은 EC2(Ubuntu, `bash`) 기준입니다. Windows에서 시도한다면 `scripts\*.ps1` 세트를 사용하세요.
+> 모든 셸 명령은 EC2(Ubuntu, `bash`) 기준입니다. Windows에서 시도한다면 `scripts\powershell\*.ps1` 세트를 사용하세요.
 
 ---
 
@@ -49,11 +37,19 @@
   | 3000 (TCP) | 웹앱(auth-server) | 내 IP 또는 교육장 대역 |
 
 > ⚠️ **포트 3000**: 웹앱은 `auth-server`가 3000 포트로 서빙합니다(80 아님). 80으로 열고 싶다면
-> 구동 시 `PORT=80`이 필요하고 권한 처리(`sudo`/`setcap`)가 추가됩니다 — 교육에서는 **3000 권장**.
+> 구동 시 `PORT=80`이 필요하고 아래 권한 처리 중 하나가 추가됩니다 — 교육에서는 **3000 권장**.
+> ```bash
+> sudo PORT=80 node auth-server/src/server.js           # sudo 방식
+> sudo setcap 'cap_net_bind_service=+ep' $(which node)  # setcap 방식 (이후 sudo 없이 실행 가능)
+> ```
 
 접속:
 ```bash
 ssh -i <your-key>.pem ubuntu@<EC2-PUBLIC-IP>   # 기본 사용자: ubuntu
+```
+```bash
+# Permission denied (publickey) 오류 시 → 키 파일 권한 설정 후 재시도
+chmod 400 <your-key>.pem
 ```
 
 ---
@@ -64,6 +60,9 @@ ssh -i <your-key>.pem ubuntu@<EC2-PUBLIC-IP>   # 기본 사용자: ubuntu
 > 취득합니다. 디스크에 저장되는 장기 액세스 키가 없어 유출·회수 부담이 사라집니다(교육 샌드박스 전용 권한).
 
 ### B-1. (콘솔) 관리자 역할 생성
+
+> AWS 콘솔 상단 검색창에 **"IAM"** 을 입력 → IAM 서비스 진입.
+
 1. **IAM → 역할 → 역할 생성**
 2. 신뢰할 수 있는 엔터티: **AWS 서비스 → EC2**
 3. 권한 정책: **AdministratorAccess** 연결 *(교육 샌드박스 전용 — 운영 금지)*
@@ -103,13 +102,14 @@ aws sts get-caller-identity
 ## C. 소스 동기화
 
 ```bash
-git clone <REPOSITORY_URL> simple-album && cd simple-album   # 최초 1회
+git clone <REPOSITORY_URL> simple-album   # 최초 1회
+cd ~/simple-album                          # 디렉토리 이동 (이후 모든 명령은 여기서)
 # 이후 업데이트는: git pull
 ```
 이후 모든 명령은 **프로젝트 루트**(`simple-album/`)에서 실행합니다.
 
+---
 > --- 여기서부터 프로젝트 파일 사용 ---
-
 ---
 
 ## D. 구성
@@ -145,11 +145,11 @@ ls -l auth-server/keys/jwt_private_key.pem    # 존재 확인
 | `auth-server/src/jwt.js` | `const AUDIENCE = "myalbum1";` | 토큰 **발행** 시 `aud` |
 | `config/env.sh` | `export AUDIENCE="myalbum1"` | 05 스크립트가 API GW **Authorizer 검증값**으로 사용 |
 
-본인 고유값으로 **두 곳 모두** 변경(예: 이니셜/직번 사용):
+본인 고유값으로 **두 곳 모두** 변경(예: 이니셜/사번/학번/전화번호 끝자리 4개 사용):
 ```bash
-#  myalbum1  →  myalbum-<본인식별자>   (예: myalbum-kim)
-sed -i 's/myalbum1/myalbum-kim/' auth-server/src/jwt.js config/env.sh
-grep -rn "myalbum-kim" auth-server/src/jwt.js config/env.sh   # 두 곳 모두 바뀌었는지 확인
+#  myalbum1  →  myalbum-<본인식별자>   (예: myalbum-2090)
+sed -i 's/myalbum1/myalbum-2090/' auth-server/src/jwt.js config/env.sh
+grep -rn "myalbum-2090" auth-server/src/jwt.js config/env.sh   # 두 곳 모두 바뀌었는지 확인
 ```
 > ⚠️ 이 변경은 **04·05 실행 전, 그리고 auth-server 기동 전**에 끝내야 합니다(검증값이 토큰 발행 시점에
 > 고정되므로). 이미 05를 돌렸다면 값 변경 후 05를 다시 실행하세요(멱등 — 기존 API 재사용).
@@ -214,6 +214,7 @@ nohup env API_ENDPOINT="$API_ENDPOINT" npm start > /tmp/auth-server.log 2>&1 &
    `[login] OK · sub=james · token=eyJhbGciOi...`  ← **토큰발행 = 로그보기**
 3. **사진 업로드**(jpg/png/webp) → 로그에 `[presign] OK` → `[upload] 완료` → 잠시 후
    `[albums] N개 항목`, **내 앨범**에 썸네일 표시(= 썸네일 람다 자동 생성 성공).
+4. **로그아웃** → 로그아웃 버튼 클릭 → 세션스토리지에 저장된 토큰 정보 삭제(탭을 닫은 것과 동일 효과).
 
 ### G-1-1. Presigned URL 원리 확인
 
@@ -269,20 +270,36 @@ https://myalbum-<ACCOUNT_ID>.s3.ap-northeast-2.amazonaws.com/gallery/thumb/james
 썸네일 **반복 조회**가 많은 앨범 서비스에서 CloudFront가 특히 유리합니다. Presigned GET은 매번 S3를 거치지만, CloudFront는 첫 요청 이후 엣지에서 캐시로 응답해 S3 비용과 지연을 동시에 줄입니다.
 
 ### G-2. `aud` 격리 실증 (E의 목표)
-2인 1조로 **상대의 API**에 내 토큰을 던져 401을 확인합니다.
+2인 1조로 진행합니다. **본인 API 200 확인 → 교차 호출 401 확인** 순서로 대비 효과를 체감합니다.
 > 전제: ① 내 auth-server가 떠 있을 것(§F), ② 상대의 **API-ID**(상대가 05 실행 후 공유)를 알 것.
+
 ```bash
 # (A에서) 내 토큰 발급
 TOKEN=$(curl -s -X POST http://localhost:3000/login \
   -H 'content-type: application/json' -d '{"username":"james","password":"demo"}' | jq -r .token)
 
-# A의 토큰(aud=myalbum-A)으로 B의 API 호출 → 401 (aud 불일치, Authorizer 거부)
+# 1단계: A의 토큰(aud=myalbum-A)으로 A의 API 호출 → 200 (즉, 본인의 API는 본인 토큰으로 먼저 확인)
+UPLOAD_URL=$(curl -s -X POST https://<A의-API-ID>.execute-api.ap-northeast-2.amazonaws.com/presign \
+  -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"contentType":"image/png"}' | jq -r .uploadUrl)
+echo "$UPLOAD_URL"   # → presigned PUT URL 출력 확인
+
+# 출력된 presigned URL로 sample.png를 S3에 직접 업로드 → thumbnailer Lambda 자동 실행
+curl -X PUT "$UPLOAD_URL" \
+  -H 'content-type: image/png' \
+  --data-binary @auth-server/public/images/sample.png
+# → 200 OK + 잠시 후 gallery/thumb/ 에 썸네일 자동 생성됨(브라우저 새로고침으로 확인)
+```
+
+같은 토큰을 **본인 API**로 호출하면 200 + presigned URL. 이 대비로 Authorizer의 `aud` 검증을 확인합니다.
+
+```bash
+# 2단계: A의 토큰(aud=myalbum-A)으로 B의 API 호출 → 401 (aud 불일치, Authorizer 거부)
 curl -i -X POST https://<B의-API-ID>.execute-api.ap-northeast-2.amazonaws.com/presign \
   -H "authorization: Bearer $TOKEN" -H 'content-type: application/json' \
   -d '{"contentType":"image/png"}'
 #   → HTTP/1.1 401 Unauthorized  (서명·iss는 통과하지만 aud가 달라 거부)
 ```
-> 같은 토큰을 **본인 API**로 호출하면 200 + presigned URL. 이 대비로 Authorizer의 `aud` 검증을 체감합니다.
 
 ### G-3. (선택) 자동 스모크 테스트
 ```bash
@@ -318,7 +335,7 @@ bash scripts/99_teardown.sh     # 확인 프롬프트에 DELETE 입력
 ### H-2. EC2 정리
 - **중지(stop)**: 컴퓨팅 과금 중단(단, EBS 볼륨 비용은 잔존).
 - **완전 비용 차단**은 **종료(terminate)** 권장(교육 종료 시). 종료하면 인스턴스 프로파일 연결도 함께 해제됩니다.
-- 보안그룹 22/3000은 종료 후 닫힘.
+- 보안그룹 (22/3000 포트 오픈)은 과금사항 아님. 콘솔에서 삭제가능.
 
 ### H-3. (선택) 관리자 역할 정리
 > ✅ **장기 액세스 키가 없으므로 키 비활성화/삭제 단계가 불필요합니다**(인스턴스 프로파일 방식의 이점).
@@ -326,6 +343,9 @@ bash scripts/99_teardown.sh     # 확인 프롬프트에 DELETE 입력
 - **콘솔:** EC2에서 역할 분리(작업 → 보안 → IAM 역할 수정 → 없음) 후,
   IAM → 역할 → `myrole_ec2_admin_profile` 삭제.
 > ⚠️ 역할을 EC2에서 떼면 그 인스턴스의 CLI 관리자 권한이 사라집니다. **반드시 §H-1 teardown 완료 후** 진행하세요.
+
+> 역할을 **유지하는 경우**: IAM → 역할 → `myrole_ec2_admin_profile` → 권한 탭 →
+> **AdministratorAccess 제거** (역할 자체는 남기되 관리자 권한만 해제).
 
 ### H-4. 개인키 폐기
 - `auth-server/keys/jwt_private_key.pem`은 **교육 전용 일회용 키** → 수업 후 로컬에서도 삭제.
@@ -337,4 +357,4 @@ bash scripts/99_teardown.sh     # 확인 프롬프트에 DELETE 입력
 → presigned PUT URL → 브라우저가 S3에 직접 업로드 → S3 이벤트 → thumbnailer(sharp) 썸네일 →
 album-list(presigned GET)로 본인 사진만 조회.
 
-*— 문서 버전 v1.1 · v1.0 대비 변경: 관리자 자격증명을 EC2 인스턴스 프로파일(`myrole_ec2_admin_profile`)로 정정*
+*— 문서 버전 v1.2 · v1.1 대비 변경: §A sudo/setcap 예시·SSH 오류 안내, §B-1 콘솔 진입 경로, §C 디렉토리 명시·구분선, §E 예시 통일, §G-1 로그아웃 단계, §G-2 200→업로드→401 재구성, §H-2 보안그룹 정정, §H-3 유지 시 대안 추가*

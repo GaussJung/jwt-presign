@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # 06_wire_s3_event.ps1  —  S3 이벤트 → thumbnailer (Windows)
 # ⚠️ 무한루프 방지: prefix=gallery/original/ 에만 트리거. 썸네일은 gallery/thumb/ 로 출력.
 # =============================================================================
 $ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1; . .\scripts\_load_state.ps1
+Set-Location (Join-Path $PSScriptRoot "..\.."); . .\config\env.ps1; . .\scripts\powershell\_load_state.ps1
 
 $ThumbArn = "arn:aws:lambda:${REGION}:${ACCOUNT_ID}:function:$FN_THUMB"
 

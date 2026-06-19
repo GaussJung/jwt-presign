@@ -1,10 +1,10 @@
-# =============================================================================
+﻿# =============================================================================
 # 05_create_http_api.ps1  —  HTTP API + 네이티브 JWT Authorizer (Windows)
 # ⚠️ TODO(라이브 검증): --jwt-configuration shorthand 가 환경에 따라 까다로울 수 있다.
 #    강사용 리허설에서 정상 토큰 통과 / 틀린 aud 401 을 반드시 확인할 것.
 # =============================================================================
 $ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1; . .\scripts\_load_state.ps1
+Set-Location (Join-Path $PSScriptRoot "..\.."); . .\config\env.ps1; . .\scripts\powershell\_load_state.ps1
 
 # resources.env 키 업서트 헬퍼(재실행 시 API_ID/AUTHZ_ID 등 라인 중복 누적 방지).
 function Put-State($key, $val) {

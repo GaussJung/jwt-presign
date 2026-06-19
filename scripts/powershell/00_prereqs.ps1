@@ -1,9 +1,9 @@
-# =============================================================================
+﻿# =============================================================================
 # 00_prereqs.ps1  —  실습 시작 전 환경 점검 (Windows / PowerShell)
 # 실행:  powershell -ExecutionPolicy Bypass -File scripts\00_prereqs.ps1
 # =============================================================================
 $ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot "..")   # 프로젝트 루트로 이동
+Set-Location (Join-Path $PSScriptRoot "..\..")   # 프로젝트 루트로 이동
 . .\config\env.ps1
 
 Write-Host "── 1) 필수 도구 확인 ───────────────────────────────"

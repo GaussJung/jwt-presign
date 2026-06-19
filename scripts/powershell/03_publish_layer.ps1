@@ -1,10 +1,10 @@
-# =============================================================================
+﻿# =============================================================================
 # 03_publish_layer.ps1  —  sharp 레이어 빌드 & 게시 (Windows)
 # ⚠️ Windows에서 빌드하므로 Lambda(linux-x64) 타깃 바이너리를 강제로 받아야 한다:
 #    npm install --os=linux --cpu=x64 sharp
 # =============================================================================
 $ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot ".."); . .\config\env.ps1
+Set-Location (Join-Path $PSScriptRoot "..\.."); . .\config\env.ps1
 
 # resources.env 키 업서트 헬퍼(재실행 시 SHARP_LAYER_ARN 라인 중복 누적 방지).
 function Put-State($key, $val) {
