@@ -7,7 +7,6 @@ JWT(RS256) + Presigned URL 기반 서버리스 파일 업로드를 직접 구현
 ## 디렉토리 구조
 ```
 jwt-presign/
-├── CLAUDE.md              # Claude Code 작업 기준(프로젝트 규칙)
 ├── config/                # env.sh / env.ps1(설정 단일 출처), CORS·IAM 정책
 ├── scripts/               # 프로비저닝 스크립트 (.sh = EC2/Ubuntu)
 │   ├── 00_prereqs · 01_create_bucket · 02_create_iam_roles
@@ -20,7 +19,7 @@ jwt-presign/
 └── docs/                  # 1_lab-guide · 2_개념설명(PDF) · 3_실습가이드 · 4_구조도 · 5_운영매뉴얼
 ```
 
-## 빠른 시작 (학생, 본인 EC2 / Ubuntu 24.04)
+## 빠른 시작 (실습자, 본인 EC2 / Ubuntu 24.04)
 ```bash
 git clone <this-repo> && cd jwt-presign
 # 0) jwt_private_key.pem 을 auth-server/keys/ 에 배치 (커뮤니티에서 받은 파일)

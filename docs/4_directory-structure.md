@@ -1,13 +1,12 @@
 # 디렉토리 구조도
 
 > Simple Album 실습 프로젝트(JWT + Presigned URL 서버리스 업로드)의 리포 구조.
-> 작성 환경(Windows)에서 push → 학생이 본인 EC2(Ubuntu 24.04)에서 `git pull` 후 실행한다.
+> 작성 환경(Windows)에서 push → 실습자가 본인 EC2(Ubuntu 24.04)에서 `git pull` 후 실행한다.
 
 ## 전체 트리
 
 ```
 jwt-presign/
-├── CLAUDE.md                     # Claude Code 작업 기준(가드레일·요청 처리 규약) ※ 공개 리포 미포함
 ├── README.md                     # 프로젝트 개요 + 빠른 시작
 ├── .gitignore                    # *.pem · .env · *.zip · node_modules/ · refdoc/ · requests/ 제외
 ├── .gitattributes                # *.sh → eol=lf 강제(CRLF 혼입 방지)
@@ -64,7 +63,7 @@ jwt-presign/
 │   └── README.md
 │
 ├── docs/                         # ── 문서(공개) ──
-│   ├── 1_lab-guide.md                         #   학생용 실습 가이드(3시간)
+│   ├── 1_lab-guide.md                         #   실습자용 실습 가이드(3시간)
 │   ├── 2_JWT_Presigned_URL_개념설명_v1.0.pdf  #   개념 교육 자료(외부 배포물)
 │   ├── 3_jwt_presign_practice_guide.md        #   실습 절차서(손으로 따라 하기)
 │   ├── 4_directory-structure.md               #   (이 문서) 디렉토리 구조도
@@ -87,11 +86,11 @@ jwt-presign/
 
 | 영역 | 위치 | 실행 주체 | 역할 |
 |---|---|---|---|
-| 인증/웹 서버 | `auth-server/` | 학생 EC2 | RS256 JWT 발행 + 웹 클라이언트 서빙 |
+| 인증/웹 서버 | `auth-server/` | 실습자 EC2 | RS256 JWT 발행 + 웹 클라이언트 서빙 |
 | 서버리스 함수 | `lambdas/` | AWS Lambda | presign 발급 · 썸네일 · 목록 |
 | 프로비저닝 | `scripts/` (bash) · `scripts/powershell/` (.ps1) | EC2 / Windows | 인프라 생성·배포·정리 |
 | 설정/정책 | `config/` | 스크립트가 로드 | 환경값 단일 출처 + IAM/CORS 템플릿 |
-| 문서 | `docs/` | — | 학생/강사 가이드 |
+| 문서 | `docs/` | — | 실습자/강사 가이드 |
 
 ## 공개 리포 위생 (요약)
 
