@@ -1,7 +1,7 @@
 # Terraform 심화 과제 — Simple Album 인프라를 선언형으로
 
 > 기존 `scripts/01~06`(AWS CLI + sh, 명령형)로 만들던 인프라를 Terraform(선언형)으로
-> 재구성하는 **심화 후속 과제**용 실습 자료. (위치: `terraform/`, 문서: `terraform/doc/`)
+> 재구성하는 **심화 후속 과제**용 실습 자료. (위치: `terraform/`, 문서: `terraform/docs/`)
 > 배포는 관리자 역할 인스턴스 프로파일이 적용된 **배포서버 EC2(Ubuntu 24.04)** 에서 진행한다.
 
 ---
@@ -84,10 +84,11 @@ terraform/
 ├── tf_10_apply.sh   # env.sh 주입 → init/apply → .state 브리지
 ├── tf_99_destroy.sh # destroy + 레이어 버전 정리 (⚠️ DELETE 입력 필요)
 ├── .gitignore       # tfstate/.terraform 커밋 방지
-└── doc/
+└── docs/
     ├── README.md                        # 이 문서(설계/구성 설명)
     ├── jwt_presign_terraform_guide.md   # 실습 절차서(손으로 따라 하기, v0.9)
-    └── terraform_apply_sequence.png     # apply 실행 순서(DAG) 다이어그램
+    ├── terraform_apply_sequence.png     # apply 실행 순서(DAG) 다이어그램
+    └── graph_example/                   # terraform graph 실행 결과 예시(DOT txt + png)
 ```
 
 ---
@@ -107,7 +108,7 @@ terraform/
 멱등성 개념이 가장 선명하게 전달된다.
 
 apply 가 리소스를 어떤 순서로 만드는지(참조 그래프 기반 병렬 실행)는
-`doc/terraform_apply_sequence.png` 다이어그램 참조.
+`docs/terraform_apply_sequence.png` 다이어그램 참조.
 
 ---
 
@@ -132,6 +133,7 @@ apply 가 리소스를 어떤 순서로 만드는지(참조 그래프 기반 병
 | apply 시 `BucketAlreadyOwnedByYou` / `EntityAlreadyExists` | sh(01~06)로 만든 리소스 잔존 → `99_teardown.sh` 로 정리 후 재시도 |
 | destroy 가 레이어 조회 실패로 중단 | 레이어를 먼저 수동 삭제한 경우 → `terraform destroy -refresh=false` |
 | `expected runtime to be one of [...] got nodejs24.x` | provider 5.x 잔존(`.terraform.lock.hcl` 고정) — nodejs24.x 는 6.x부터 허용 → `terraform init -upgrade` |
+| `Required plugins are not installed` (checksums 불일치) | lock 파일 ↔ `.terraform/` 캐시 불일치 → `rm -rf .terraform && terraform init` (커밋된 lock 기준 재다운로드 · tfstate 영향 없음) |
 | 90 smoke test 에서 API_ENDPOINT 비어 있음 | `tf_10_apply.sh` 를 안 거치고 직접 `terraform apply` 함 → 래퍼로 재실행(브리지 기록) |
 | 401 Unauthorized | issuer 끝 슬래시/aud 불일치 — sh 실습과 동일한 체크포인트 |
 
@@ -141,5 +143,8 @@ apply 가 리소스를 어떤 순서로 만드는지(참조 그래프 기반 병
 
 - `terraform/` 은 공개 리포에 **추적되는** 디렉토리다. 실행 시 생기는 로컬 산출물
   (`.terraform/`, `*.tfstate*`, `build/`)은 `terraform/.gitignore` 가 커밋을 막는다.
+- 예외: `.terraform.lock.hcl` 은 **의도적으로 커밋한다**(HashiCorp 권장) — 전원 동일한
+  provider 버전·체크섬으로 고정해 lock↔캐시 불일치·버전 드리프트를 예방한다.
+  최초 1회 EC2에서 정상 `terraform init` 후 생성된 lock 파일을 커밋해 둘 것.
 - **tfstate 는 절대 커밋 금지** — 계정ID·ARN 등 실환경 값이 그대로 담긴다.
 - `.tf` 파일에는 계정ID·시크릿이 없다(동적 취득 + env.sh 주입) — 커밋 전 스캔은 기존과 동일.

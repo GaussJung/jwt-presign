@@ -3,7 +3,7 @@
 > **전제:** 기본 실습(`docs/3_jwt_presign_practice_guide.md`, CLI+sh)을 완료한 실습자 대상의 **심화 후속 과제**입니다.
 > 기본 실습에서 `01~06` 스크립트로 한 단계씩 만들던 인프라를 **Terraform(선언형)** 으로 일괄 배포하고,
 > 명령형(sh)과 선언형(IaC)의 차이를 체감하는 것이 목표입니다.
-> **설계/구성 설명:** `terraform/doc/README.md` · **apply 실행 순서 다이어그램:** `terraform/doc/terraform_apply_sequence.png`
+> **설계/구성 설명:** `terraform/docs/README.md` · **apply 실행 순서 다이어그램:** `terraform/docs/terraform_apply_sequence.png`
 > **대상 환경:** 관리자 역할 인스턴스 프로파일이 연결된 배포서버 EC2(Ubuntu 24.04, x86_64).
 
 ---
@@ -152,11 +152,23 @@ terraform apply    # → 선언된 상태로 되돌림
 
 ### G-3. 의존 그래프 실물 확인
 ```bash
-terraform graph                      # DAG를 DOT 텍스트로 출력
+terraform graph > my_graph_example.txt   # DAG를 DOT 텍스트로 저장
 sudo apt-get install -y graphviz     # (선택) 이미지로 렌더링
-terraform graph | dot -Tpng > my_graph.png
+terraform graph | dot -Tpng > my_graph_example.png
 ```
-`doc/terraform_apply_sequence.png` 다이어그램의 "실물 버전"입니다.
+`docs/terraform_apply_sequence.png` 다이어그램의 "실물 버전"입니다.
+
+**실행 결과 예시**가 `docs/graph_example/` 에 저장되어 있습니다 (강사용 EC2에서 위 명령으로 생성):
+- `my_graph_example.txt` — DOT 텍스트. 노드 선언부(리소스 25개)와 엣지(`"A" -> "B"`) 목록으로 구성
+- `my_graph_example.png` — graphviz 렌더링 이미지
+
+**그래프 읽는 법(주의):** `terraform graph`의 화살표는 **"의존한다" 방향**입니다 —
+`A -> B` 는 "A가 B를 참조한다 = **B가 먼저** 생성된다"는 뜻입니다.
+(생성 진행 방향으로 그린 `terraform_apply_sequence.png` 와 화살표 방향이 반대이니 혼동 주의)
+예시에서 확인할 것:
+- `integration.presign -> lambda_function.presign` : Lambda가 먼저, Integration이 나중 (요청 흐름의 핵심 의존)
+- `route.presign -> integration.presign` + `route.presign -> authorizer.jwt` : Route는 둘 다 완료 후
+- `s3_bucket_notification.album -> lambda_permission.s3_invoke_thumb` : 코드의 명시적 `depends_on` 1곳도 동일한 엣지로 나타남 — 그래프에서는 참조 의존과 구분되지 않음
 
 ### G-4. (선택) 직렬 실행으로 순서 관찰
 ```bash
@@ -197,6 +209,7 @@ bash terraform/tf_99_destroy.sh    # 확인 프롬프트에 DELETE 입력
 | `BucketAlreadyOwnedByYou` / `EntityAlreadyExists` | 기본 실습(sh) 리소스 잔존 → `bash scripts/99_teardown.sh` 로 정리 후 재시도 |
 | `Error: Invalid provider configuration` / init 실패 | 네트워크로 provider 다운로드 불가 → 프록시/보안그룹 아웃바운드 확인 |
 | `expected runtime to be one of [...] got nodejs24.x` | 예전 init이 만든 `.terraform.lock.hcl`이 AWS provider 5.x를 고정 중(5.x는 nodejs24.x를 모름) → `cd terraform && terraform init -upgrade` 후 재실행 |
+| `Required plugins are not installed` (checksums 불일치) | lock 파일과 `.terraform/` 캐시가 서로 다른 시점 산물 → `rm -rf .terraform && terraform init` (리포에 커밋된 lock 기준 재다운로드 · tfstate는 `.terraform/` 밖이라 안전) |
 | 90 smoke test에서 API_ENDPOINT 비어 있음 | 래퍼 없이 `terraform apply`만 직접 실행함 → `bash terraform/tf_10_apply.sh` 재실행(.state 브리지 기록) |
 | destroy가 레이어 조회 실패로 중단 | 레이어를 수동으로 먼저 지운 경우 → `terraform destroy -refresh=false` |
 | 401 Unauthorized | 토큰 `iss/aud/kid` 확인 — 특히 §C의 AUDIENCE 두 곳 일치 + 변경 후 재apply 여부 |

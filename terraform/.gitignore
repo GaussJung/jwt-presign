@@ -2,7 +2,9 @@
 #   tfstate 에는 계정ID·리소스 ARN 등 실환경 값이 그대로 들어간다.
 #   이 디렉토리는 리포에 추적되므로 이 .gitignore 가 실제로 커밋을 막는다.
 .terraform/
-.terraform.lock.hcl
+# ※ .terraform.lock.hcl 은 여기 넣지 않는다 — '의도적으로 커밋'한다(HashiCorp 권장).
+#   provider 버전·체크섬을 전원 동일하게 고정해 lock↔캐시 불일치·버전 드리프트를 예방.
+#   (실습자 전원이 같은 플랫폼 linux_amd64 EC2 라 부작용 없음)
 *.tfstate
 *.tfstate.*
 *.tfvars
