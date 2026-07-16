@@ -131,6 +131,7 @@ apply 가 리소스를 어떤 순서로 만드는지(참조 그래프 기반 병
 | plan 단계 `no matching Lambda Layer Version found` | 03을 아직 안 돌림 → `bash scripts/03_publish_layer.sh` 먼저 |
 | apply 시 `BucketAlreadyOwnedByYou` / `EntityAlreadyExists` | sh(01~06)로 만든 리소스 잔존 → `99_teardown.sh` 로 정리 후 재시도 |
 | destroy 가 레이어 조회 실패로 중단 | 레이어를 먼저 수동 삭제한 경우 → `terraform destroy -refresh=false` |
+| `expected runtime to be one of [...] got nodejs24.x` | provider 5.x 잔존(`.terraform.lock.hcl` 고정) — nodejs24.x 는 6.x부터 허용 → `terraform init -upgrade` |
 | 90 smoke test 에서 API_ENDPOINT 비어 있음 | `tf_10_apply.sh` 를 안 거치고 직접 `terraform apply` 함 → 래퍼로 재실행(브리지 기록) |
 | 401 Unauthorized | issuer 끝 슬래시/aud 불일치 — sh 실습과 동일한 체크포인트 |
 

@@ -196,6 +196,7 @@ bash terraform/tf_99_destroy.sh    # 확인 프롬프트에 DELETE 입력
 | plan 단계 `no matching Lambda Layer Version found` | §D의 03을 아직 안 돌림 → `bash scripts/03_publish_layer.sh` 먼저 |
 | `BucketAlreadyOwnedByYou` / `EntityAlreadyExists` | 기본 실습(sh) 리소스 잔존 → `bash scripts/99_teardown.sh` 로 정리 후 재시도 |
 | `Error: Invalid provider configuration` / init 실패 | 네트워크로 provider 다운로드 불가 → 프록시/보안그룹 아웃바운드 확인 |
+| `expected runtime to be one of [...] got nodejs24.x` | 예전 init이 만든 `.terraform.lock.hcl`이 AWS provider 5.x를 고정 중(5.x는 nodejs24.x를 모름) → `cd terraform && terraform init -upgrade` 후 재실행 |
 | 90 smoke test에서 API_ENDPOINT 비어 있음 | 래퍼 없이 `terraform apply`만 직접 실행함 → `bash terraform/tf_10_apply.sh` 재실행(.state 브리지 기록) |
 | destroy가 레이어 조회 실패로 중단 | 레이어를 수동으로 먼저 지운 경우 → `terraform destroy -refresh=false` |
 | 401 Unauthorized | 토큰 `iss/aud/kid` 확인 — 특히 §C의 AUDIENCE 두 곳 일치 + 변경 후 재apply 여부 |
