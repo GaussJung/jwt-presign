@@ -1,0 +1,10 @@
+# Terraform 로컬 상태/캐시 — 공개 리포에 절대 커밋 금지
+#   tfstate 에는 계정ID·리소스 ARN 등 실환경 값이 그대로 들어간다.
+#   이 디렉토리는 리포에 추적되므로 이 .gitignore 가 실제로 커밋을 막는다.
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+build/

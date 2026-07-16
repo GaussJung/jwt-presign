@@ -55,6 +55,14 @@ jwt-presign/
 │       ├── 06_wire_s3_event.ps1 · 90_smoke_test.ps1 · 99_teardown.ps1
 │       └── _load_state.ps1       #   스크립트 간 리소스 ID 상태 로드(Windows용 헬퍼)
 │
+├── terraform/                    # ── 심화 과제: 01·02·04·05·06 을 Terraform(선언형)으로 ──
+│   ├── *.tf                      #   s3/iam/lambda/apigw/s3_event 등(기존 sh와 1:1 매핑)
+│   ├── tf_00_install.sh          #   Terraform 설치(Ubuntu, HashiCorp apt)
+│   ├── tf_10_apply.sh            #   env.sh 주입 → init/apply → .state 브리지(90 호환)
+│   ├── tf_99_destroy.sh          #   파괴적 — DELETE 입력 후에만
+│   ├── .gitignore                #   tfstate/.terraform 커밋 방지
+│   └── doc/                      #   README(매뉴얼) + apply 순서 다이어그램(png)
+│
 ├── config/                       # ── 환경값 단일 출처 + 정책 템플릿 ──
 │   ├── env.sh / env.ps1          #   계정ID·리전·issuer·audience 등(런타임 로드)
 │   ├── lambda-trust-policy.json  #   Lambda 신뢰 정책
@@ -89,6 +97,7 @@ jwt-presign/
 | 인증/웹 서버 | `auth-server/` | 실습자 EC2 | RS256 JWT 발행 + 웹 클라이언트 서빙 |
 | 서버리스 함수 | `lambdas/` | AWS Lambda | presign 발급 · 썸네일 · 목록 |
 | 프로비저닝 | `scripts/` (bash) · `scripts/powershell/` (.ps1) | EC2 / Windows | 인프라 생성·배포·정리 |
+| IaC 심화 과제 | `terraform/` | 배포서버 EC2 | 01·02·04·05·06 을 선언형으로 배포(매뉴얼: `terraform/doc/`) |
 | 설정/정책 | `config/` | 스크립트가 로드 | 환경값 단일 출처 + IAM/CORS 템플릿 |
 | 문서 | `docs/` | — | 실습자/강사 가이드 |
 
