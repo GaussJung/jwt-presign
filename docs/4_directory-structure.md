@@ -61,7 +61,7 @@ jwt-presign/
 │   ├── tf_10_apply.sh            #   env.sh 주입 → init/apply → .state 브리지(90 호환)
 │   ├── tf_99_destroy.sh          #   파괴적 — DELETE 입력 후에만
 │   ├── .gitignore                #   tfstate/.terraform 커밋 방지
-│   └── docs/                     #   README(구성 설명) · 실습 가이드(v0.9) · apply 순서 다이어그램(png)
+│   └── docs/                     #   README(구성 설명) · 실습 가이드(v1.0) · apply 순서 다이어그램(png)
 │
 ├── config/                       # ── 환경값 단일 출처 + 정책 템플릿 ──
 │   ├── env.sh / env.ps1          #   계정ID·리전·issuer·audience 등(런타임 로드)

@@ -90,7 +90,7 @@ terraform/
 ├── .gitignore       # tfstate/.terraform 커밋 방지
 └── docs/
     ├── README.md                        # 이 문서(설계/구성 설명)
-    ├── jwt_presign_terraform_guide.md   # 실습 절차서(손으로 따라 하기, v0.9)
+    ├── jwt_presign_terraform_guide.md   # 실습 절차서(손으로 따라 하기, v1.0)
     ├── terraform_apply_sequence.png     # apply 실행 순서(DAG) 다이어그램
     └── graph_example/                   # terraform graph 실행 결과 예시(DOT txt + png)
 ```

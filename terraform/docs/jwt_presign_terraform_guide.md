@@ -1,4 +1,4 @@
-# 간편앨범 Terraform 실습 가이드 (심화 과제) — v0.9
+# 간편앨범 Terraform 실습 가이드 (심화 과제) — v1.0
 
 > **전제:** 기본 실습(`docs/3_jwt_presign_practice_guide.md`, CLI+sh)을 완료한 실습자 대상의 **심화 후속 과제**입니다.
 > 기본 실습에서 `01~06` 스크립트로 한 단계씩 만들던 인프라를 **Terraform(선언형)** 으로 일괄 배포하고,
@@ -117,8 +117,8 @@ bash terraform/tf_10_apply.sh
 스크립트가 하는 일(자세한 로직은 파일 주석 참조):
 1. `config/env.sh` 값을 `TF_VAR_*` 환경변수로 주입 (값의 단일 출처 유지)
 2. `terraform init` — AWS/archive provider 다운로드(최초 1회만 오래 걸림)
-3. `terraform apply` — **plan(실행 계획)이 먼저 출력**됩니다. `Plan: 19 to add...` 형태의
-   요약과 리소스 목록을 읽어본 뒤 `yes` 를 입력하면 생성이 시작됩니다.
+3. `terraform apply` — **plan(실행 계획)이 먼저 출력**됩니다. `Plan: 20 to add, 0 to change,
+   0 to destroy.` 요약과 리소스 목록을 읽어본 뒤 `yes` 를 입력하면 생성이 시작됩니다.
 4. `terraform output` 값을 `.state/resources.env` 에 기록 — 기본 실습과 같은 키(API_ENDPOINT 등)로
    저장되므로 **90 스모크 테스트·operation 스크립트가 무수정으로 동작**합니다.
 
@@ -254,5 +254,7 @@ presigned PUT → S3 직접 업로드 → S3 이벤트 → thumbnailer → album
 
 ---
 
-*— 문서 버전 v0.9 (초안) · 강사용 EC2 리허설(init/validate/apply/destroy end-to-end) 통과 후 v1.0 안정화 예정.
-검증 전 유의: HCL은 아직 실환경 미검증 상태이며, plan 요약의 리소스 개수 등 세부 수치는 리허설 후 확정.*
+*— 문서 버전 v1.0 · 강사용 EC2 리허설 2회 end-to-end(init→apply→smoke test→destroy) 통과로 안정화(2026-07-16).
+v0.9 대비 변경: AWS provider `~> 6.0` 상향(nodejs24.x 런타임 지원), `.terraform.lock.hcl` 커밋 정책 반영,
+트러블슈팅 2건 추가(runtime 검증 오류·lock↔캐시 불일치), §C-3 AUDIENCE 상세 절차 수록,
+§G-3 graph 실물 예시(`docs/graph_example/`) 반영, plan 리소스 수치 확정(20 to add).*
