@@ -51,16 +51,20 @@
 
 ```bash
 # 배포서버 EC2 (관리자 프로파일 적용, Ubuntu 24.04)
-git clone <repo> && cd jwt-presign
+git clone <REPOSITORY_URL> simple-album   # 최초 1회 (이후 업데이트는 git pull)
+cd ~/simple-album                          # 이후 모든 명령은 프로젝트 루트에서
 
 bash scripts/00_prereqs.sh              # 1) 자격증명/리전/CLI 점검  (sh)
 bash terraform/tf_00_install.sh         # 2) Terraform 설치(최초 1회) (sh)
 bash scripts/03_publish_layer.sh        # 3) sharp 레이어 게시 — 먼저! (sh)
 bash terraform/tf_10_apply.sh           # 4) 01+02+04+05+06 일괄 배포 (TF)
-# (auth-server 기동: cd auth-server && npm install && 별도 터미널 npm start)
+# auth-server 기동(기본 실습 §F와 동일 — operation 스크립트 권장):
+#   cd auth-server && npm install && cd ..   # 최초 1회
+#   bash operation/startup.sh                # 백그라운드 기동(API_ENDPOINT 자동 로드)
 bash scripts/90_smoke_test.sh           # 5) end-to-end 검증          (sh)
 
-bash terraform/tf_99_destroy.sh         # 6) 전체 삭제(수업 종료 후)   (TF)
+bash operation/stop.sh                  # 6) auth-server 중지 (멱등)
+bash terraform/tf_99_destroy.sh         # 7) 전체 삭제(수업 종료 후, DELETE 입력) (TF)
 ```
 
 기존 sh 흐름(`00→01→02→03→04→05→06→90`)과 달리 **03이 3번째**로 온다.

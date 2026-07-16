@@ -62,12 +62,34 @@ terraform version                          # v1.5+ 출력 확인
 
 1. **환경값 확인** — `source ./config/env.sh` 로 REGION/ACCOUNT_ID/BUCKET 출력 확인 (기본 실습 §D-1)
 2. **개인키 배치** — `auth-server/keys/jwt_private_key.pem` (기본 실습 §D-2, 빠뜨리면 서버 기동 실패)
-3. **AUDIENCE 커스터마이징** — `auth-server/src/jwt.js` + `config/env.sh` **두 곳 일치** (기본 실습 §E)
+3. **AUDIENCE 커스터마이징** — 아래 상세 절차 (기본 실습 §E와 동일 원리)
 
-> AUDIENCE를 바꾸면 Terraform 쪽은 파일 수정이 필요 없습니다 — `tf_10_apply.sh`가
-> env.sh 값을 `TF_VAR_audience`로 주입해 JWT Authorizer 검증값까지 자동 반영됩니다.
-> ⚠️ 단, **E(배포) 이후에 바꿨다면** `tf_10_apply.sh`를 다시 실행하세요
-> (Terraform이 Authorizer의 audience 변경분만 감지해 in-place 업데이트합니다 — 이것도 관찰 포인트).
+### C-3. AUDIENCE 커스터마이징 상세
+
+**목표:** 실습자마다 `aud`를 다르게 설정 → *실습자 A의 토큰으로 실습자 B의 API에 접근 시 401*을 실증.
+
+`AUDIENCE`는 **두 파일이 일치**해야 본인 스택이 동작합니다(발행 측 + 검증 측):
+
+| 파일 | 줄 | 역할 |
+|---|---|---|
+| `auth-server/src/jwt.js` | `const AUDIENCE = "myalbum1";` | 토큰 **발행** 시 `aud` |
+| `config/env.sh` | `export AUDIENCE="myalbum1"` | `tf_10_apply.sh`가 `TF_VAR_audience`로 주입 → API GW **Authorizer 검증값** *(기본 실습에서는 05 스크립트가 사용하던 값)* |
+
+본인 고유값으로 **두 곳 모두** 변경(예: 이니셜/사번/학번/전화번호 끝자리 4개 사용):
+```bash
+#  myalbum1  →  myalbum-<본인식별자>   (예: myalbum-2090)
+sed -i 's/myalbum1/myalbum-2090/' auth-server/src/jwt.js config/env.sh
+grep -rn "myalbum-2090" auth-server/src/jwt.js config/env.sh   # 두 곳 모두 바뀌었는지 확인
+```
+
+> ⚠️ 이 변경은 **E(Terraform 배포) 실행 전, 그리고 auth-server 기동 전**에 끝내야 합니다
+> (검증값이 토큰 발행 시점에 고정되므로 — 기본 실습의 "04·05 실행 전" 규칙에 해당).
+> **이미 E를 돌렸다면** 값 변경 후 `tf_10_apply.sh`를 다시 실행하세요 — .tf 파일 수정은 필요 없고,
+> Terraform이 Authorizer의 audience 변경분만 감지해 in-place 업데이트합니다
+> (plan에 `1 to change`로 표시 — 이것도 관찰 포인트).
+
+**격리 실증(2인 1조):** A는 `myalbum-A`, B는 `myalbum-B`로 설정.
+서명키·issuer·kid는 전원 공통이고 **aud만 다릅니다.** → §F에서 기본 실습 §G-2의 교차 호출 테스트로 확인.
 
 ---
 
