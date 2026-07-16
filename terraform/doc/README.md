@@ -85,8 +85,9 @@ terraform/
 ├── tf_99_destroy.sh # destroy + 레이어 버전 정리 (⚠️ DELETE 입력 필요)
 ├── .gitignore       # tfstate/.terraform 커밋 방지
 └── doc/
-    ├── README.md                     # 이 문서
-    └── terraform_apply_sequence.png  # apply 실행 순서(DAG) 다이어그램
+    ├── README.md                        # 이 문서(설계/구성 설명)
+    ├── jwt_presign_terraform_guide.md   # 실습 절차서(손으로 따라 하기, v0.9)
+    └── terraform_apply_sequence.png     # apply 실행 순서(DAG) 다이어그램
 ```
 
 ---
